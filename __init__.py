@@ -25,7 +25,7 @@ __version__ = "0.1"
 import logging
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QModelIndex
 
 
 # --------------------------------------------------------------------------- #
@@ -518,6 +518,122 @@ class QPixmapLabel(QtWidgets.QLabel):
     def currentTopLeft(self):
         """Return local coords for the left top corner of the current image."""
         return self.currentRect().topLeft()
+
+
+class QTableItem(object):
+    default_flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable
+
+    def __init__(self, datamap=None, flags=None):
+        if datamap is None:
+            self.datamap = {Qt.DisplayRole: ""}  # maps roles to values
+        else:
+            self.datamap = datamap  # TODO: validity check?
+        if flags is None:
+            self.flags = self.default_flags
+        else:
+            self.flags = flags
+
+    def data(self, role=Qt.DisplayRole):
+        return self.datamap.get(role, QtCore.QVariant())
+
+    def setData(self, value, role=Qt.DisplayRole):
+        # TODO: validity check?
+        self.datamap[role] = value
+
+
+class QTableModel(QtCore.QAbstractTableModel):
+    """A simple model for table views.
+
+    Might also be useful as base class when implementing more complex
+    table models.
+    """
+    def __init__(self, column_headers, row_headers=None, parent=None):
+        super().__init__(parent)
+        self.colhead = []
+        self.rowhead = []
+        self.datamap = {}  # maps model key to item
+
+        # add headers
+        for text in column_headers:
+            self.colhead.append(self.createHeaderItem({Qt.DisplayRole: text}))
+        if row_headers is not None:
+            for text in row_headers:
+                item = self.createHeaderItem({Qt.DisplayRole: text})
+                self.rowhead.append(item)
+
+    def createHeaderItem(self, datamap=None, flags=None):
+        return QTableItem(datamap, flags)
+
+    def createKey(self, index):
+        """Converts a model index to a (row, column) tuple."""
+        return (index.row(), index.column())
+
+    createItem = createHeaderItem
+
+#    def index(self, row, column, parent=QModelIndex()):
+#        return self.createIndex(row, column)
+
+    def rowCount(self, parent=QtCore.QModelIndex()):
+        if parent.isValid():
+            # see http://doc.qt.io/qt-5/qabstractitemmodel.html#rowCount
+            return 0
+        else:
+            return len(self.rowhead)  # TODO: check the meaning of parent
+
+    def columnCount(self, parent=QtCore.QModelIndex()):
+        return len(self.colhead)
+
+    def data(self, index, role=Qt.DisplayRole):
+        key = self.createKey(index)
+        if key in self.datamap:
+            return self.datamap[key].data(role)
+        # if we have no data for that role or index, we return an
+        # invalid QVariant; why return that?
+        # see: http://doc.qt.io/qt-5/qabstractitemmodel.html#data
+        return QtCore.QVariant()
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal:
+            header = self.colhead
+        elif orientation == Qt.Vertical:
+            header = self.rowhead
+        else:
+            raise ValueError("Not a valid Qt orientation: %s" % orientation)
+        try:
+            return header[section].data(role)
+        except IndexError:
+            pass  # no data available for this section
+        # if we have no data for that role or section, we return an
+        # invalid QVariant; why do that?
+        # so that the behaviour is similar to self.data
+        return QtCore.QVariant()
+
+    def flags(self, index):
+        key = self.createKey(index)
+        try:
+            return self.datamap[key].flags
+        except KeyError:
+            return Qt.NoItemFlags
+
+
+class QEditableTableModel(QTableModel):
+    """An editable model for table views.
+    """
+    def __init__(self, column_headers, row_headers=None, parent=None):
+        super().__init__(column_headers, row_headers, parent)
+
+    def createItem(self, datamap=None, flags=None):
+        item = super().createItem(datamap, flags)
+        item.flags = item.flags | Qt.ItemIsEditable
+        return item
+
+    def setData(self, index, value, role=Qt.EditRole):
+        key = self.createKey(index)
+        item = self.datamap.get(key, self.createItem(*key))
+        item.setData(value, role)
+        self.datamap[key] = item
+        self.dataChanged.emit(index, index, [role])
+        return True
 
 
 # --------------------------------------------------------------------------- #
