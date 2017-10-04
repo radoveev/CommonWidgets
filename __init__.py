@@ -665,7 +665,7 @@ def calculateScale(scalingrect, framingrect):
     Multiplying the scaling factor with the width and height of scalingrect
     resizes it so it fits optimally into framingrect while preserving the
     aspect ratio of scalingrect.
-    The limiting dimension is "width" or "height".
+    The returned limiting dimension is either 'width' or 'height'.
     """
     scw = scalingrect.width()
     sch = scalingrect.height()
