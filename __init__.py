@@ -234,7 +234,7 @@ class QScalingLayout(QtWidgets.QLayout):
     When the layout size changes the geometry of each item is rescaled
     proportionally.
 
-    Further infos: section How to Write a Custom Layout Manager at
+    Further infos: section 'How to Write a Custom Layout Manager' at
         http://doc.qt.io/qt-5/layout.html
     """
     def __init__(self, referencewidth, referenceheight):
@@ -321,6 +321,12 @@ class QScalingLayout(QtWidgets.QLayout):
 
     def setReferenceSize(self, width, height):
         """Sets the reference size, which is used to calculate the scale."""
+        width = int(width)
+        height = int(height)
+        if width <= 0:
+            raise ValueError("reference width must be bigger than 0")
+        if height <= 0:
+            raise ValueError("reference height must be bigger than 0")
         self.refrect = QtCore.QRect(0, 0, width, height)
         self.currect = QtCore.QRect(0, 0, width, height)
 
