@@ -75,7 +75,8 @@ class QNotice(QtWidgets.QWidget):
         return (self._fixedX and self.fixedY and self.fixedWidth and
                 self.fixedHeight)
     def setFixedGeometry(self, val):
-        self._fixedX = self.fixedY = self.fixedWidth = self.fixedHeight = val
+        self._fixedX = self._fixedY = val
+        self._fixedWidth = self._fixedHeight = val
 
     def refGeometry(self):
         """Returns the reference geometry for this notice."""
