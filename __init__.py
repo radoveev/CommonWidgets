@@ -527,6 +527,25 @@ class QPixmapLabel(QtWidgets.QLabel):
         return self.currentRect().topLeft()
 
 
+class QVisiblyStackedWidget(QtWidgets.QWidget):
+    """Similar to QStackedWidget, but all widgets are visible.
+    """
+    def __init__(self, parent=None):
+        QtWidgets.QWidget.__init__(self, parent=parent)
+        # create layout
+        layout = QtWidgets.QStackedLayout(self)
+        layout.setStackingMode(QtWidgets.QStackedLayout.StackAll)
+
+    def addWidget(self, widget):
+        self.layout().addWidget(widget)
+
+    def currentIndex(self):
+        return self.layout().currentIndex()
+
+    def setCurrentIndex(self, index):
+        return self.layout().setCurrentIndex(index)
+
+
 class QTableItem(object):
     default_flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
