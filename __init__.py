@@ -375,6 +375,40 @@ class QScalingLayout(QtWidgets.QLayout):
         return self.currect.width() / self.refrect.width()
 
 
+class QIconPushButton(QtWidgets.QPushButton):
+    """A push button displaying an icon that scales with button size.
+    """
+    def __init__(self, parent=None):
+        QtWidgets.QPushButton.__init__(self, parent)
+        self._icon_padding = 5
+        # TODO: maybe using the widget padding here would be better
+        QSPol = QtWidgets.QSizePolicy
+        self.setSizePolicy(QSPol(QSPol.Expanding, QSPol.Expanding))
+        # the default maximum for width or height of a widget in Qt is 16777215
+        # self.setMaximumSize(QSize(16777215, 16777215))
+
+    def iconPadding(self):
+        """The padding between the icon size and the widget size."""
+        return self._icon_padding
+
+    def setIconPadding(self, val):
+        self._icon_padding = val
+
+    def paintEvent(self, event):
+        QtWidgets.QPushButton.paintEvent(self, event)
+        # fit icon into current widget size
+        iconw = max(1, self.rect().width() - self._icon_padding)
+        iconh = max(1, self.rect().height() - self._icon_padding)
+        self.setIconSize(QtCore.QSize(iconw, iconh))
+
+    def sizeHint(self):
+        btnsize = QtWidgets.QPushButton.sizeHint(self)
+        iconsize = self.iconSize()
+        w = max(iconsize.width() + self._icon_padding, btnsize.width())
+        h = max(iconsize.height() + self._icon_padding, btnsize.height())
+        return QtCore.QSize(w, h)
+
+
 class QPixmapLabel(QtWidgets.QLabel):
     """A label used to display pictures with dynamic resizing.
 
