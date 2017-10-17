@@ -159,6 +159,10 @@ class QScalingNoticeBoard(QtWidgets.QWidget):
         pixmap.fill(Qt.transparent)
         self.setPixmap(pixmap)
 
+    def referenceSize(self):
+        """Return the reference size, which is used to calculate the scale."""
+        return self.layout().referenceSize()
+
     def setReferenceSize(self, width, height):
         """Sets the reference size, which is used to calculate the scale."""
         layout = self.layout()
@@ -319,6 +323,10 @@ class QScalingLayout(QtWidgets.QLayout):
         width = max(right) - min(left)
         height = max(bottom) - min(top)
         return QtCore.QSize(width, height)
+
+    def referenceSize(self):
+        """Return the reference size, which is used to calculate the scale."""
+        return self.refrect.width(), self.refrect.height()
 
     def setReferenceSize(self, width, height):
         """Sets the reference size, which is used to calculate the scale."""
