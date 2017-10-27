@@ -212,7 +212,7 @@ class QScalingNoticeBoard(QtWidgets.QWidget):
 
     def addNotice(self, widget):
         """Anchors the widget at the given widget coords and resizes it."""
-        log.info("Add notice %s", widget)
+        log.debug("Add notice %s", widget)
         notice = QNotice(widget)
         notice.setGeometry(widget.geometry())
         self.notices[id(widget)] = notice
